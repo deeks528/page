@@ -1,50 +1,545 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sri Sai Collections — Payment Link</title>
-<style>
-:root{--g:#064f43;--g2:#0a6858;--c:#fbf7ed;--gold:#c99a3b;--text:#17332d;--muted:#6d7b76;--white:#fff}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);background:linear-gradient(145deg,#f3eee2,#fff 55%,#f1eadb);min-height:100vh}.shell{width:min(960px,calc(100% - 28px));margin:auto;padding:28px 0 52px}.brand{text-align:center;margin-bottom:22px}.brand h1{margin:0;color:var(--g);font:700 clamp(2rem,6vw,3.2rem)/1 Georgia,serif;letter-spacing:-.03em}.brand p{margin:9px 0 0;color:var(--muted)}.card{background:rgba(255,255,255,.94);border:1px solid rgba(201,154,59,.25);border-radius:22px;box-shadow:0 18px 50px rgba(6,79,67,.12);overflow:hidden}.view{padding:clamp(20px,4vw,34px)}.hidden{display:none!important}.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:20px}.panel{border-radius:18px;padding:22px;background:var(--c);border:1px solid rgba(201,154,59,.2)}.panel h2{margin:8px 0;color:var(--g);font:700 1.7rem Georgia,serif}.panel p{margin:8px 0;line-height:1.55;color:#40534e}.amount{font-size:clamp(2.4rem,8vw,4.25rem);font-weight:800;color:var(--g);letter-spacing:-.05em;margin:8px 0 14px}.label{display:block;font-size:.84rem;font-weight:700;color:var(--muted);margin-bottom:6px}.field{margin-bottom:16px}input,textarea{width:100%;border:1px solid #d9d8cf;border-radius:14px;padding:13px 14px;font:inherit;outline:none;background:#fff;color:var(--text)}textarea{min-height:95px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}button,.btn{border:0;border-radius:14px;padding:13px 17px;font:inherit;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}.primary{background:var(--g);color:#fff;width:100%;padding:15px 18px}.secondary{background:#eef2ef;color:var(--g)}.gold{background:var(--gold);color:#fff}.notice{margin-top:12px;color:var(--muted);font-size:.84rem;line-height:1.45}.success{background:#edf7f2;color:#135b4d;border:1px solid #cfe7dc;padding:12px 14px;border-radius:14px;margin-top:13px;word-break:break-word}.link-box{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}.pay-box{text-align:center;padding:16px 0 4px}.pay-btn{width:min(100%,360px);background:var(--g);color:#fff;font-size:1.05rem;padding:15px 20px}.pay-note{margin-top:10px;font-size:.83rem;color:var(--muted);line-height:1.45}.mini{display:inline-flex;padding:7px 10px;background:#fff6de;border:1px solid #ead9aa;color:#765719;border-radius:999px;font-size:.78rem;font-weight:800}footer{text-align:center;margin-top:14px;font-size:.78rem;color:#78827f}@media(max-width:760px){.hero,.grid{grid-template-columns:1fr}.link-box{grid-template-columns:1fr}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tools</title>
+  <style>
+    :root {
+      --bg-page: #f3f4f6;
+      --bg-card: #ffffff;
+      --bg-subtle: #f8fafc;
+      --border-card: #e2e8f0;
+      --border-input: #cbd5e1;
+      --border-hover: #94a3b8;
+      --border-focus: #0f172a;
+
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --text-placeholder: #94a3b8;
+
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 16px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .header h1 {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .module-section {
+      padding: 20px;
+      margin-bottom: 18px;
+      border: 1px solid var(--border-card);
+      border-radius: 8px;
+      background: var(--bg-subtle);
+      transition: border-color 0.2s ease;
+    }
+
+    .module-section:focus-within {
+      border-color: var(--border-hover);
+    }
+
+    .module-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+
+    .module-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: #e2e8f0;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    .module-title h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .module-desc {
+      margin-bottom: 18px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-input);
+      border-radius: 6px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-group input:hover,
+    .form-group textarea:hover {
+      border-color: var(--border-hover);
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--text-placeholder);
+    }
+
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .form-hint {
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 14px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--border-focus);
+      outline-offset: 2px;
+    }
+
+    .btn-full {
+      grid-column: 1 / -1;
+    }
+
+    .btn-row {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-row .btn-whatsapp {
+      flex: 1;
+    }
+
+    .btn-row #openFormatterBtn {
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #000000;
+    }
+
+    .btn-whatsapp {
+      background: #16a34a;
+      color: #ffffff;
+    }
+
+    .btn-whatsapp:hover {
+      background: #15803d;
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-color: var(--border-input);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-subtle);
+      border-color: var(--border-hover);
+    }
+
+    .required {
+      color: #dc2626;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      padding: 10px 18px;
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 28px 22px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+        align-items: flex-start;
+      }
+
+      .container {
+        padding: 24px 18px;
+      }
+
+      .header h1 {
+        font-size: 22px;
+      }
+
+      .header p {
+        font-size: 13px;
+      }
+
+      .module-section {
+        padding: 16px;
+      }
+
+      .button-group {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-full,
+      .btn-row {
+        grid-column: 1;
+      }
+
+      .btn-row {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<main class="shell">
-<header class="brand"><h1>Sri Sai Collections</h1><p>Simple payment links for orders</p></header>
-<section id="creatorView" class="card view">
-<div class="mini">Create payment link</div>
-<div class="grid" style="margin-top:18px">
-<div class="field"><label class="label" for="amount">Price (₹) *</label><input id="amount" type="number" min="1" step="0.01" placeholder="e.g. 1499"></div>
-<div class="field"><label class="label" for="upiId">UPI ID *</label><input id="upiId" type="text" placeholder="e.g. yourname@upi"></div>
-</div>
-<div class="field"><label class="label" for="address">Delivery Address *</label><textarea id="address" placeholder="Enter the customer's delivery address"></textarea></div>
-<div class="grid">
-<div class="field"><label class="label" for="customer">Customer Name</label><input id="customer" type="text" placeholder="Optional"></div>
-<div class="field"><label class="label" for="order">Order / Item</label><input id="order" type="text" placeholder="e.g. Saree / Jewellery"></div>
-</div>
-<button class="primary" id="createBtn">Create Payment URL</button>
-<div id="result" class="hidden"></div>
-<p class="notice">The generated link stores the order details inside the URL. It is convenient for sharing, but the data is not encrypted; use a backend for sensitive information.</p>
-</section>
-<section id="paymentView" class="card view hidden">
-<div class="hero">
-<div class="panel"><div class="mini">Payment details</div><h2 id="displayOrder">Order</h2><div class="amount" id="displayAmount">₹0.00</div><p><strong>Customer:</strong> <span id="displayCustomer">—</span></p><p><strong>Delivery address:</strong></p><p id="displayAddress" style="white-space:pre-wrap"></p><div class="pay-box"><a id="payBtn" class="btn pay-btn" href="#">Pay via UPI</a><div class="pay-note">On a supported phone, this opens a UPI payment app with the amount and UPI ID pre-filled.</div></div></div>
-<div class="panel"><h2>Thank you</h2><p><strong>Pay to:</strong></p><p id="displayUpi"></p><div class="success">After payment, please send the receipt to Sri Sai Collections.</div><button id="newLinkBtn" class="secondary" style="margin-top:18px">Create another link</button></div>
-</div>
-</section>
-<footer>© Sri Sai Collections</footer>
-</main>
-<script>
-const BUSINESS_NAME="Sri Sai Collections", $=id=>document.getElementById(id);
-function b64url(s){const bytes=new TextEncoder().encode(s);let bin="";bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"")}
-function fromB64url(s){const p=s.replace(/-/g,"+").replace(/_/g,"/")+"===".slice((s.length+3)%4);const bin=atob(p);return new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)))}
-function money(v){return new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(v)}
-function upiUrl(p){const q=new URLSearchParams({pa:p.upiId,pn:BUSINESS_NAME,am:Number(p.amount).toFixed(2),cu:"INR",tn:p.order||"Sri Sai Collections Order"});return "upi://pay?"+q}
-function createLink(){const p={business:BUSINESS_NAME,amount:Number($("amount").value),upiId:$("upiId").value.trim(),address:$("address").value.trim(),customer:$("customer").value.trim(),order:$("order").value.trim()};if(!p.amount||p.amount<=0)return alert("Please enter a valid price.");if(!p.upiId)return alert("Please enter the receiving UPI ID.");if(!p.address)return alert("Please enter the delivery address.");const url=location.origin+location.pathname+"#payment="+b64url(JSON.stringify(p));$("result").classList.remove("hidden");$("result").innerHTML='<div class="success"><strong>Payment URL created.</strong></div><div class="link-box"><input id="generatedUrl" type="text" value="'+url+'" readonly><button class="gold" id="copyBtn">Copy</button></div>';$('copyBtn').onclick=async()=>{await navigator.clipboard.writeText(url);$('copyBtn').textContent='Copied ✓';setTimeout(()=>$('copyBtn').textContent='Copy',1400)}}
-function showPayment(p){$("creatorView").classList.add("hidden");$("paymentView").classList.remove("hidden");$("displayOrder").textContent=p.order||"Sri Sai Collections Order";$("displayAmount").textContent=money(p.amount);$("displayCustomer").textContent=p.customer||"Customer";$("displayAddress").textContent=p.address;$("displayUpi").textContent=p.upiId;$("payBtn").href=upiUrl(p);$("payBtn").textContent="Pay "+money(p.amount)+" via UPI"}
-function load(){const m=location.hash.match(/^#payment=(.+)$/);if(!m)return;try{const p=JSON.parse(fromB64url(m[1]));if(!p?.amount||!p?.upiId||!p?.address)throw 0;showPayment(p)}catch(e){alert("This payment link is invalid or incomplete.")}}
-$("createBtn").onclick=createLink;$("newLinkBtn").onclick=()=>{location.hash="";$("paymentView").classList.add("hidden");$("creatorView").classList.remove("hidden")};load();
-</script>
+  <div class="container">
+    <div class="header">
+      <h1>Modules</h1>
+      <p>Standalone utilities for customer addresses & payments</p>
+    </div>
+
+    <!-- Module 1: Address Formatter -->
+    <div class="module-section">
+      <div class="module-title">
+        <div class="module-icon">📍</div>
+        <h2>Address Formatter</h2>
+      </div>
+
+      <form id="addressModuleForm" onsubmit="event.preventDefault();">
+        <div class="form-group">
+          <label for="recipientPhone">Your Phone Number</label>
+          <input type="tel" id="recipientPhone" name="recipientPhone" placeholder="Enter 10-digit phone number"
+            pattern="[0-9]{10}" required />
+        </div>
+
+        <div class="form-group">
+          <label for="messageText">WhatsApp Message Preview</label>
+          <textarea id="messageText" name="messageText" placeholder="Message to customer..."></textarea>
+          <div class="form-hint">Address formatter link is automatically included.</div>
+        </div>
+
+        <div class="button-group">
+          <div class="btn-row">
+            <!-- WhatsApp Send Button -->
+            <button type="button" id="sendWhatsappBtn" class="btn btn-whatsapp">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.06-1.78-.415-1.464-.606-2.42-2.112-2.493-2.209-.072-.097-.597-.795-.597-1.516s.377-1.077.51-1.223c.143-.146.312-.183.416-.183.104 0 .208.002.299.006.096.004.225-.036.35.265.13.313.442 1.077.481 1.155.039.078.065.17.013.273-.052.104-.078.17-.156.26-.078.091-.164.204-.234.273-.078.078-.16.163-.069.319.091.156.403.665.865 1.076.595.53 1.096.694 1.252.772.156.078.247.065.338-.039.091-.104.39-.455.494-.61.104-.156.208-.13.35-.078.143.052.909.429 1.065.507.156.078.26.117.299.182.039.065.039.377-.105.782z" />
+              </svg>
+              <span>Send on WhatsApp</span>
+            </button>
+
+            <!-- Open Formatter Link -->
+            <a id="openFormatterBtn" href="./address-formatter.html" target="_blank" class="btn btn-primary">
+              <span>Open</span>
+              <span>→</span>
+            </a>
+          </div>
+
+          <!-- Copy Link Button -->
+          <button type="button" id="copyLinkBtn" class="btn btn-secondary">
+            <span>Copy Link</span>
+          </button>
+
+          <!-- Clear Auto-fill Button -->
+          <button type="button" id="clearAutoFillBtn" class="btn btn-secondary"
+            title="Clear auto-filled phone and message">
+            <span>Clear Auto-fill</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Module 2: Payment Link -->
+    <div class="module-section" style="margin-bottom: 0;">
+      <div class="module-title">
+        <div class="module-icon">💳</div>
+        <h2>Payment Link</h2>
+      </div>
+
+      <a href="./payment_link.html" class="btn btn-primary btn-full">
+        <span>Open Payment Link Module</span>
+        <span>→</span>
+      </a>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Link copied to clipboard!</div>
+
+  <script>
+    const phoneInput = document.getElementById('recipientPhone');
+    const messageInput = document.getElementById('messageText');
+    const openBtn = document.getElementById('openFormatterBtn');
+    const sendBtn = document.getElementById('sendWhatsappBtn');
+    const copyBtn = document.getElementById('copyLinkBtn');
+    const clearBtn = document.getElementById('clearAutoFillBtn');
+    const toast = document.getElementById('toast');
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    function cleanPhone(raw) {
+      return (raw || '').replace(/\D/g, '');
+    }
+
+    function getFormattedWhatsAppPhone(raw) {
+      let p = cleanPhone(raw);
+      if (!p) return '';
+      if (p.length === 10) {
+        p = '91' + p;
+      }
+      return p;
+    }
+
+    function getFormatterUrl() {
+      const p = cleanPhone(phoneInput.value);
+      const url = new URL('./address-formatter.html', window.location.href);
+      if (p) {
+        url.searchParams.set('phone', p);
+      }
+      return url.toString();
+    }
+
+    function updateFormState() {
+      const formatterUrl = getFormatterUrl();
+      openBtn.href = formatterUrl;
+
+      if (!messageInput.dataset.touched) {
+        messageInput.value = `Hello! Please click the link below to provide your delivery address:\n\n${formatterUrl}\n\nThank you!`;
+      }
+    }
+
+    function saveState() {
+      try {
+        const p = phoneInput.value.trim();
+        if (p) {
+          localStorage.setItem('reseller_last_phone', p);
+        } else {
+          localStorage.removeItem('reseller_last_phone');
+        }
+
+        if (messageInput.dataset.touched) {
+          localStorage.setItem('reseller_custom_message', messageInput.value);
+        }
+      } catch (e) {
+        console.warn('Error saving state:', e);
+      }
+    }
+
+    function loadState() {
+      try {
+        const savedPhone = localStorage.getItem('reseller_last_phone');
+        if (savedPhone) {
+          phoneInput.value = savedPhone;
+        }
+
+        const savedMsg = localStorage.getItem('reseller_custom_message');
+        if (savedMsg) {
+          messageInput.value = savedMsg;
+          messageInput.dataset.touched = 'true';
+        }
+      } catch (e) {
+        console.warn('Error loading state:', e);
+      }
+    }
+
+    messageInput.addEventListener('input', () => {
+      messageInput.dataset.touched = 'true';
+      saveState();
+    });
+
+    phoneInput.addEventListener('input', () => {
+      saveState();
+      if (!messageInput.dataset.touched) {
+        updateFormState();
+      } else {
+        openBtn.href = getFormatterUrl();
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      try {
+        localStorage.removeItem('reseller_last_phone');
+        localStorage.removeItem('reseller_custom_message');
+      } catch (e) { }
+      delete messageInput.dataset.touched;
+      phoneInput.value = '';
+      updateFormState();
+      showToast('Auto-fill cache cleared ✓');
+    });
+
+    // Send Button: Opens WhatsApp directly
+    sendBtn.addEventListener('click', () => {
+      const raw = phoneInput.value.trim();
+      const phone = getFormattedWhatsAppPhone(raw);
+
+      if (!phone) {
+        alert('Please enter a valid 10-digit mobile number.');
+        phoneInput.focus();
+        return;
+      }
+
+      saveState();
+
+      const message = messageInput.value.trim() || `Hello! Please click the link below to provide your delivery address:\n\n${getFormatterUrl()}\n\nThank you!`;
+      const encodedText = encodeURIComponent(message);
+      const whatsappUrl = `https://api.whatsapp.com/send/?text=${encodedText}&type=phone_number&app_absent=0`;
+
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    });
+
+    // Copy Link Button
+    copyBtn.addEventListener('click', async () => {
+      const url = getFormatterUrl();
+      saveState();
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Link copied to clipboard ✓');
+      } catch (err) {
+        prompt('Copy the link below:', url);
+      }
+    });
+
+    // Initialize state on load
+    loadState();
+    updateFormState();
+  </script>
 </body>
+
 </html>
