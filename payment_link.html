@@ -370,11 +370,40 @@
             font-size: 13px;
         }
 
-        .pay-helper {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 12px;
-            line-height: 1.45;
+        .expiry-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .expired-panel {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 10px;
+            padding: 22px 18px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .expired-icon {
+            font-size: 38px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .expired-msg {
+            color: #9b2c2c;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 16px;
         }
 
         .toast {
@@ -445,10 +474,23 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="upiNameInput">UPI Name / Payee Name (Optional)</label>
-                    <input type="text" id="upiNameInput" maxlength="40" placeholder="e.g. Collections" />
-                    <div class="form-hint">Appears as the Payee Name on the customer's UPI app.</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="upiNameInput">UPI Name / Payee Name</label>
+                        <input type="text" id="upiNameInput" maxlength="40" placeholder="e.g. Collections" />
+                        <div class="form-hint">Appears on customer's UPI app.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="validityInput">Validity</label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input type="number" id="validityInput" min="1" max="720" value="24" placeholder="24"
+                                style="padding-right: 42px;" />
+                            <span
+                                style="position: absolute; right: 12px; font-size: 13px; color: var(--text-muted); pointer-events: none; font-weight: 500;">hrs</span>
+                        </div>
+                        <div class="form-hint">Default 24 hrs</div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -456,7 +498,7 @@
                         Item Description (Optional)
                         <span id="charCount" class="char-counter">0/30</span>
                     </label>
-                    <input type="text" id="itemInput" maxlength="30" placeholder="e.g. Banarasi Silk Saree" />
+                    <input type="text" id="itemInput" maxlength="30" placeholder="e.g. Saree" />
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-top: 6px;">
@@ -470,7 +512,7 @@
                 </div>
 
                 <div id="resultBox" class="result-box hidden">
-                    <span class="result-tag">Short Link Ready ✓</span>
+                    <span id="resultTag" class="result-tag">Short Link Ready ✓ (Valid for 24h)</span>
                     <div class="link-row">
                         <input type="text" id="shortUrlOutput" readonly select-all />
                         <button type="button" id="copyLinkBtn" class="btn btn-secondary">Copy</button>
@@ -504,6 +546,10 @@
                 <div class="label">Total Amount Due</div>
                 <div id="customerAmount" class="pay-amount">₹0.00</div>
 
+                <div id="customerExpiryPill" class="expiry-pill hidden">
+                    <span>⏱️ Valid for 24h</span>
+                </div>
+
                 <!-- Optional Item Display -->
                 <div id="customerItemWrap" class="pay-item-wrap hidden">
                     <span class="pay-item-badge">
@@ -535,10 +581,44 @@
                 Tapping opens Google Pay, PhonePe, Paytm, or your default UPI app with the exact price, payee, and item
                 note pre-filled.
             </p>
+        </section>
 
-            <!-- <button type="button" id="createAnotherBtn" class="btn btn-secondary" style="margin-top: 20px;">
-                Create Another Link
-            </button> -->
+        <!-- Expired Payment Link View -->
+        <section id="expiredView" class="hidden">
+            <div class="header">
+                <div class="expired-icon">⏳</div>
+                <h1>Payment Link Expired</h1>
+                <p>This payment link is no longer valid</p>
+            </div>
+
+            <div class="expired-panel">
+                <div class="expired-msg">
+                    Payment links automatically expire after <strong>24 hours</strong> for order validity and security.
+                </div>
+
+                <div class="pay-meta-box">
+                    <div class="pay-meta-row">
+                        <span>Original Amount</span>
+                        <strong id="expiredAmount">₹0.00</strong>
+                    </div>
+                    <div id="expiredItemWrap" class="pay-meta-row hidden">
+                        <span>Item</span>
+                        <strong id="expiredItem">—</strong>
+                    </div>
+                    <div id="expiredUpiNameWrap" class="pay-meta-row hidden">
+                        <span>Payee</span>
+                        <strong id="expiredUpiName">—</strong>
+                    </div>
+                    <div id="expiredDateWrap" class="pay-meta-row hidden">
+                        <span>Expired At</span>
+                        <strong id="expiredDate">—</strong>
+                    </div>
+                </div>
+            </div>
+
+            <p class="pay-helper" style="text-align: center;">
+                Please contact the seller to request a fresh payment link.
+            </p>
         </section>
 
     </div>
@@ -557,10 +637,23 @@
          * Compact Payload Encoder
          * Encodes: price:upiId or price:upiId:item in base64url (stripping padding)
          */
-        function encodePayment(price, upiId, item = '') {
+        /**
+         * Compact Payload Encoder
+         * Encodes: price:upiId:exp:item in base64url (stripping padding)
+         * exp is epoch seconds encoded in base36
+         */
+        function encodePayment(price, upiId, item = '', expSec = null) {
             const cleanUpi = upiId.trim();
             const cleanItem = (item || '').trim().replace(/:/g, ' '); // avoid collision with delimiter
-            const raw = cleanItem ? `${price}:${cleanUpi}:${cleanItem}` : `${price}:${cleanUpi}`;
+            const expStr = expSec ? Number(expSec).toString(36) : '';
+
+            let raw;
+            if (expStr) {
+                raw = cleanItem ? `${price}:${cleanUpi}:${expStr}:${cleanItem}` : `${price}:${cleanUpi}:${expStr}`;
+            } else {
+                raw = cleanItem ? `${price}:${cleanUpi}::${cleanItem}` : `${price}:${cleanUpi}`;
+            }
+
             const b64 = btoa(raw)
                 .replace(/\+/g, '-')
                 .replace(/\//g, '_')
@@ -572,7 +665,7 @@
          * Payload & Query Parameter Decoder
          * Reads:
          * - #p=... or #... containing base64 payload
-         * - Query parameter pn=... (UPI Name) from location.search or location.hash
+         * - Query parameter pn=... (UPI Name) and exp=... from location.search or location.hash
          */
         function decodePayment() {
             const hash = window.location.hash || '';
@@ -580,31 +673,41 @@
 
             if (!hash && !search) return null;
 
-            // Extract UPI Name (pn) from query string or hash query params
+            // Extract UPI Name (pn) & optional exp from query string or hash query params
             const searchParams = new URLSearchParams(search);
             let upiName = searchParams.get('pn') || searchParams.get('name') || '';
+            let queryExp = searchParams.get('exp') || '';
 
-            // Also check if pn is inside hash (e.g. #p=...&pn=...)
-            if (!upiName && hash.includes('&')) {
+            // Also check if pn or exp is inside hash (e.g. #p=...&pn=...)
+            if (hash.includes('&')) {
                 const hashQuery = new URLSearchParams(hash.replace(/^[#?]/, ''));
-                upiName = hashQuery.get('pn') || hashQuery.get('name') || '';
+                if (!upiName) upiName = hashQuery.get('pn') || hashQuery.get('name') || '';
+                if (!queryExp) queryExp = hashQuery.get('exp') || '';
             }
 
             // 1. Support plain format: #am=499&pa=name@upi&tn=Saree
             if (hash.includes('am=') && hash.includes('pa=')) {
                 const params = new URLSearchParams(hash.replace(/^[#?]/, ''));
+                let expiresAt = null;
+                const rawExp = params.get('exp') || queryExp;
+                if (rawExp) {
+                    const parsed = parseInt(rawExp, 36);
+                    if (!isNaN(parsed) && parsed > 1700000000 && parsed < 2500000000) {
+                        expiresAt = parsed * 1000;
+                    }
+                }
                 return {
                     amount: Number(params.get('am')),
                     upiId: params.get('pa'),
                     item: params.get('tn') || '',
-                    upiName: upiName || params.get('pn') || ''
+                    upiName: upiName || params.get('pn') || '',
+                    expiresAt
                 };
             }
 
             // 2. Decode compact base64url payload
             let token = hash.replace(/^[#?]/, '');
             if (token.includes('&')) {
-                // If hash has multiple params, extract p=...
                 const hashParams = new URLSearchParams(token);
                 token = hashParams.get('p') || hashParams.get('payment') || token.split('&')[0];
             } else {
@@ -621,21 +724,60 @@
                 // Legacy JSON support
                 if (raw.startsWith('{')) {
                     const parsed = JSON.parse(raw);
+                    let expiresAt = null;
+                    if (parsed.exp) {
+                        expiresAt = parsed.exp > 1e11 ? parsed.exp : parsed.exp * 1000;
+                    }
                     return {
                         amount: Number(parsed.amount),
                         upiId: parsed.upiId,
                         item: parsed.order || parsed.item || '',
-                        upiName: upiName || parsed.business || ''
+                        upiName: upiName || parsed.business || '',
+                        expiresAt
                     };
                 }
 
-                // Compact format: "amount:upiId" or "amount:upiId:item"
+                // Compact format:
+                // "amount:upiId"
+                // "amount:upiId:exp"
+                // "amount:upiId:item"
+                // "amount:upiId:exp:item"
                 const parts = raw.split(':');
                 if (parts.length >= 2 && !isNaN(parts[0])) {
                     const amount = Number(parts[0]);
                     const upiId = parts[1];
-                    const item = parts.slice(2).join(':'); // handles item text
-                    return { amount, upiId, item, upiName };
+                    let item = '';
+                    let expiresAt = null;
+
+                    if (parts.length === 3) {
+                        const parsedExp = parseInt(parts[2], 36);
+                        if (!isNaN(parsedExp) && parsedExp > 1700000000 && parsedExp < 2500000000) {
+                            expiresAt = parsedExp * 1000;
+                        } else {
+                            item = parts[2];
+                        }
+                    } else if (parts.length >= 4) {
+                        const parsedExp = parseInt(parts[2], 36);
+                        if (!isNaN(parsedExp) && parsedExp > 1700000000 && parsedExp < 2500000000) {
+                            expiresAt = parsedExp * 1000;
+                            item = parts.slice(3).join(':');
+                        } else {
+                            item = parts.slice(2).join(':');
+                        }
+                    }
+
+                    // Query param exp fallback if not in payload
+                    if (!expiresAt && queryExp) {
+                        const parsedExp = parseInt(queryExp, 36);
+                        if (!isNaN(parsedExp) && parsedExp > 1700000000 && parsedExp < 2500000000) {
+                            expiresAt = parsedExp * 1000;
+                        } else if (!isNaN(Number(queryExp))) {
+                            const num = Number(queryExp);
+                            expiresAt = num > 1e11 ? num : num * 1000;
+                        }
+                    }
+
+                    return { amount, upiId, item, upiName, expiresAt };
                 }
             } catch (e) {
                 console.warn('Failed to decode compact payment token:', e);
@@ -675,24 +817,36 @@
         // DOM elements
         const creatorView = document.getElementById('creatorView');
         const paymentView = document.getElementById('paymentView');
+        const expiredView = document.getElementById('expiredView');
         const priceInput = document.getElementById('priceInput');
         const upiInput = document.getElementById('upiInput');
         const upiNameInput = document.getElementById('upiNameInput');
+        const validityInput = document.getElementById('validityInput');
         const generateBtn = document.getElementById('generateBtn');
         const resultBox = document.getElementById('resultBox');
+        const resultTag = document.getElementById('resultTag');
         const shortUrlOutput = document.getElementById('shortUrlOutput');
         const copyLinkBtn = document.getElementById('copyLinkBtn');
         const whatsappShareBtn = document.getElementById('whatsappShareBtn');
         const previewLinkBtn = document.getElementById('previewLinkBtn');
         const customerAmount = document.getElementById('customerAmount');
+        const customerExpiryPill = document.getElementById('customerExpiryPill');
         const customerItemWrap = document.getElementById('customerItemWrap');
         const customerItem = document.getElementById('customerItem');
         const customerUpiNameWrap = document.getElementById('customerUpiNameWrap');
         const customerUpiName = document.getElementById('customerUpiName');
         const customerUpiId = document.getElementById('customerUpiId');
         const upiDeepLinkBtn = document.getElementById('upiDeepLinkBtn');
-        // const createAnotherBtn = document.getElementById('createAnotherBtn');
+        const expiredAmount = document.getElementById('expiredAmount');
+        const expiredItemWrap = document.getElementById('expiredItemWrap');
+        const expiredItem = document.getElementById('expiredItem');
+        const expiredUpiNameWrap = document.getElementById('expiredUpiNameWrap');
+        const expiredUpiName = document.getElementById('expiredUpiName');
+        const expiredDateWrap = document.getElementById('expiredDateWrap');
+        const expiredDate = document.getElementById('expiredDate');
         const toast = document.getElementById('toast');
+
+        let countdownTimer = null;
 
         function showToast(msg) {
             toast.textContent = msg;
@@ -703,17 +857,23 @@
         let generatedUrl = '';
         let generatedData = null;
 
-        // Auto-fill logic for UPI ID & Payee Name
+        // Auto-fill logic for UPI ID, Payee Name & Validity
         function loadSavedPaymentProfile() {
             try {
                 const savedUpi = localStorage.getItem('reseller_upi_id');
                 const savedName = localStorage.getItem('reseller_upi_name');
+                const savedValidity = localStorage.getItem('reseller_validity');
 
                 if (savedUpi && !upiInput.value) {
                     upiInput.value = savedUpi;
                 }
                 if (savedName && !upiNameInput.value) {
                     upiNameInput.value = savedName;
+                }
+                if (savedValidity && !isNaN(Number(savedValidity))) {
+                    validityInput.value = savedValidity;
+                } else if (!validityInput.value) {
+                    validityInput.value = '24';
                 }
 
                 // Also check if creator view was opened with parameters
@@ -731,6 +891,8 @@
             try {
                 const upi = upiInput.value.trim();
                 const name = upiNameInput.value.trim();
+                const valHours = Number(validityInput.value);
+
                 if (upi) {
                     localStorage.setItem('reseller_upi_id', upi);
                 }
@@ -739,6 +901,9 @@
                 } else {
                     localStorage.removeItem('reseller_upi_name');
                 }
+                if (valHours && valHours > 0) {
+                    localStorage.setItem('reseller_validity', valHours);
+                }
             } catch (err) {
                 console.warn('Error saving to localStorage:', err);
             }
@@ -746,25 +911,29 @@
 
         upiInput.addEventListener('input', savePaymentProfile);
         upiNameInput.addEventListener('input', savePaymentProfile);
+        validityInput.addEventListener('input', savePaymentProfile);
 
         const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
         if (clearAutoFillBtn) {
             clearAutoFillBtn.addEventListener('click', () => {
                 localStorage.removeItem('reseller_upi_id');
                 localStorage.removeItem('reseller_upi_name');
+                localStorage.removeItem('reseller_validity');
                 upiInput.value = '';
                 upiNameInput.value = '';
+                validityInput.value = '24';
                 showToast('Auto-fill cache cleared ✓');
             });
         }
 
-        // Form submission: Generate Link
+        // Form submission: Generate Link with configurable validity (default 24h)
         document.getElementById('paymentForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const price = Number(priceInput.value);
             const upiId = upiInput.value.trim();
             const upiName = upiNameInput.value.trim();
             const item = itemInput.value.trim();
+            const validityHours = Math.max(1, Number(validityInput.value) || 24);
 
             if (!price || price <= 0) {
                 alert('Please enter a valid price.');
@@ -777,11 +946,15 @@
                 return;
             }
 
-            // Persist valid UPI profile to localStorage
+            // Persist valid profile to localStorage
             savePaymentProfile();
 
-            // Compact Base64url payload with price, upiId, and optional item (<= 30 chars)
-            const token = encodePayment(price, upiId, item);
+            // Expiry timestamp in epoch seconds
+            const expiresAt = Date.now() + (validityHours * 60 * 60 * 1000);
+            const expSec = Math.floor(expiresAt / 1000);
+
+            // Compact Base64url payload with price, upiId, optional item, and expiry
+            const token = encodePayment(price, upiId, item, expSec);
 
             // Build URL: base + query parameter pn + hash token p
             const baseUrl = window.location.origin + window.location.pathname;
@@ -791,11 +964,12 @@
             }
             urlObj.hash = `p=${token}`;
             generatedUrl = urlObj.toString();
-            generatedData = { price, upiId, upiName, item };
+            generatedData = { price, upiId, upiName, item, expiresAt, validityHours };
 
             shortUrlOutput.value = generatedUrl;
+            resultTag.textContent = `Short Link Ready ✓ (Valid for ${validityHours}h)`;
             resultBox.classList.remove('hidden');
-            showToast('Payment link generated ✓');
+            showToast(`Payment link generated ✓ (Valid for ${validityHours}h)`);
         });
 
         // Copy button
@@ -813,9 +987,12 @@
         whatsappShareBtn.addEventListener('click', () => {
             if (!generatedUrl || !generatedData) return;
             const formattedPrice = formatCurrency(generatedData.price);
-            let text = `Hello! Please click the link below to complete your payment of ${formattedPrice} via UPI:\n\n${generatedUrl}\n\nThank you!`;
+            const vHours = generatedData.validityHours || 24;
+            const vText = `${vHours} hour${vHours > 1 ? 's' : ''}`;
+
+            let text = `Hello! Please click the link below to complete your payment of ${formattedPrice} via UPI:\n\n${generatedUrl}\n\n⏱️ Note: This payment link is valid for ${vText}.\nThank you!`;
             if (generatedData.item) {
-                text = `Hello! Payment for "${generatedData.item}" (${formattedPrice}):\n\n${generatedUrl}\n\nThank you!`;
+                text = `Hello! Payment request for "${generatedData.item}" (${formattedPrice}):\n\n${generatedUrl}\n\n⏱️ Note: This payment link is valid for ${vText}.\nThank you!`;
             }
             const whatsappUrl = `https://api.whatsapp.com/send/?text=${encodeURIComponent(text)}`;
             window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
@@ -827,31 +1004,82 @@
             checkRoute();
         });
 
-        // Create another link button
-        // createAnotherBtn.addEventListener('click', () => {
-        //     // Clear hash & search
-        //     window.history.pushState({}, '', window.location.pathname);
-        //     paymentView.classList.add('hidden');
-        //     creatorView.classList.remove('hidden');
-        //     resultBox.classList.add('hidden');
-        //     priceInput.value = '';
-        //     itemInput.value = '';
-        //     charCount.textContent = '0/30';
-        //     loadSavedPaymentProfile();
-        //     priceInput.focus();
-        // });
-
-        // Route handler: Display Payment View if payload present
+        // Route handler: Display Payment View, Expired View, or Creator View
         function checkRoute() {
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+
             const data = decodePayment();
             if (data && data.amount > 0 && data.upiId) {
                 creatorView.classList.add('hidden');
+
+                // Check for 24-hour expiration
+                const isExpired = data.expiresAt && Date.now() > data.expiresAt;
+
+                if (isExpired) {
+                    paymentView.classList.add('hidden');
+                    expiredView.classList.remove('hidden');
+
+                    expiredAmount.textContent = formatCurrency(data.amount);
+                    if (data.item) {
+                        expiredItem.textContent = data.item;
+                        expiredItemWrap.classList.remove('hidden');
+                    } else {
+                        expiredItemWrap.classList.add('hidden');
+                    }
+                    if (data.upiName) {
+                        expiredUpiName.textContent = data.upiName;
+                        expiredUpiNameWrap.classList.remove('hidden');
+                    } else {
+                        expiredUpiNameWrap.classList.add('hidden');
+                    }
+                    if (data.expiresAt) {
+                        const expDate = new Date(data.expiresAt);
+                        expiredDate.textContent = expDate.toLocaleString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                        });
+                        expiredDateWrap.classList.remove('hidden');
+                    } else {
+                        expiredDateWrap.classList.add('hidden');
+                    }
+                    return;
+                }
+
+                // Active valid payment view
+                expiredView.classList.add('hidden');
                 paymentView.classList.remove('hidden');
 
                 // 1. Display Price
                 customerAmount.textContent = formatCurrency(data.amount);
 
-                // 2. Display Item (if present)
+                // 2. Display Expiry / Countdown if present
+                if (data.expiresAt) {
+                    function updateCountdown() {
+                        const msLeft = data.expiresAt - Date.now();
+                        if (msLeft <= 0) {
+                            if (countdownTimer) clearInterval(countdownTimer);
+                            checkRoute();
+                            return;
+                        }
+                        const hoursLeft = Math.floor(msLeft / (1000 * 60 * 60));
+                        const minsLeft = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const timeStr = hoursLeft > 0 ? `${hoursLeft}h ${minsLeft}m` : `${minsLeft}m`;
+                        customerExpiryPill.textContent = `⏱️ Valid for ${timeStr}`;
+                        customerExpiryPill.classList.remove('hidden');
+                    }
+                    updateCountdown();
+                    countdownTimer = setInterval(updateCountdown, 30000);
+                } else {
+                    customerExpiryPill.classList.add('hidden');
+                }
+
+                // 3. Display Item (if present)
                 if (data.item) {
                     customerItem.textContent = data.item;
                     customerItemWrap.classList.remove('hidden');
@@ -859,7 +1087,7 @@
                     customerItemWrap.classList.add('hidden');
                 }
 
-                // 3. Display Payee Name (if present)
+                // 4. Display Payee Name (if present)
                 if (data.upiName) {
                     customerUpiName.textContent = data.upiName;
                     customerUpiNameWrap.classList.remove('hidden');
@@ -867,14 +1095,15 @@
                     customerUpiNameWrap.classList.add('hidden');
                 }
 
-                // 4. Display UPI ID
+                // 5. Display UPI ID
                 customerUpiId.textContent = data.upiId;
 
-                // 5. Build Deep Link with item as tn and upiName as pn
+                // 6. Build Deep Link with item as tn and upiName as pn
                 upiDeepLinkBtn.href = buildUpiDeepLink(data.amount, data.upiId, data.upiName, data.item);
             } else {
                 creatorView.classList.remove('hidden');
                 paymentView.classList.add('hidden');
+                expiredView.classList.add('hidden');
                 loadSavedPaymentProfile();
             }
         }
