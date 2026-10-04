@@ -1,7 +1,8 @@
 {
   "name": "Tools Module",
   "short_name": "Tools",
-  "start_url": "https://deeks528.github.io",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
