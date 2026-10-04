@@ -401,6 +401,14 @@
   <div id="toast" class="toast">Link copied to clipboard!</div>
 
   <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log("Service Worker Registered"))
+        .catch(err => console.log("Service Worker Failed", err));
+    }
+  </script>
+
+  <script>
     const phoneInput = document.getElementById('recipientPhone');
     const messageInput = document.getElementById('messageText');
     const openBtn = document.getElementById('openFormatterBtn');
