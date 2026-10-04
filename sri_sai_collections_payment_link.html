@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sri Sai Collections — Payment Link</title>
+<style>
+:root{--g:#064f43;--g2:#0a6858;--c:#fbf7ed;--gold:#c99a3b;--text:#17332d;--muted:#6d7b76;--white:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);background:linear-gradient(145deg,#f3eee2,#fff 55%,#f1eadb);min-height:100vh}.shell{width:min(960px,calc(100% - 28px));margin:auto;padding:28px 0 52px}.brand{text-align:center;margin-bottom:22px}.brand h1{margin:0;color:var(--g);font:700 clamp(2rem,6vw,3.2rem)/1 Georgia,serif;letter-spacing:-.03em}.brand p{margin:9px 0 0;color:var(--muted)}.card{background:rgba(255,255,255,.94);border:1px solid rgba(201,154,59,.25);border-radius:22px;box-shadow:0 18px 50px rgba(6,79,67,.12);overflow:hidden}.view{padding:clamp(20px,4vw,34px)}.hidden{display:none!important}.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:20px}.panel{border-radius:18px;padding:22px;background:var(--c);border:1px solid rgba(201,154,59,.2)}.panel h2{margin:8px 0;color:var(--g);font:700 1.7rem Georgia,serif}.panel p{margin:8px 0;line-height:1.55;color:#40534e}.amount{font-size:clamp(2.4rem,8vw,4.25rem);font-weight:800;color:var(--g);letter-spacing:-.05em;margin:8px 0 14px}.label{display:block;font-size:.84rem;font-weight:700;color:var(--muted);margin-bottom:6px}.field{margin-bottom:16px}input,textarea{width:100%;border:1px solid #d9d8cf;border-radius:14px;padding:13px 14px;font:inherit;outline:none;background:#fff;color:var(--text)}textarea{min-height:95px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}button,.btn{border:0;border-radius:14px;padding:13px 17px;font:inherit;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}.primary{background:var(--g);color:#fff;width:100%;padding:15px 18px}.secondary{background:#eef2ef;color:var(--g)}.gold{background:var(--gold);color:#fff}.notice{margin-top:12px;color:var(--muted);font-size:.84rem;line-height:1.45}.success{background:#edf7f2;color:#135b4d;border:1px solid #cfe7dc;padding:12px 14px;border-radius:14px;margin-top:13px;word-break:break-word}.link-box{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}.pay-box{text-align:center;padding:16px 0 4px}.pay-btn{width:min(100%,360px);background:var(--g);color:#fff;font-size:1.05rem;padding:15px 20px}.pay-note{margin-top:10px;font-size:.83rem;color:var(--muted);line-height:1.45}.mini{display:inline-flex;padding:7px 10px;background:#fff6de;border:1px solid #ead9aa;color:#765719;border-radius:999px;font-size:.78rem;font-weight:800}footer{text-align:center;margin-top:14px;font-size:.78rem;color:#78827f}@media(max-width:760px){.hero,.grid{grid-template-columns:1fr}.link-box{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header class="brand"><h1>Sri Sai Collections</h1><p>Simple payment links for orders</p></header>
+<section id="creatorView" class="card view">
+<div class="mini">Create payment link</div>
+<div class="grid" style="margin-top:18px">
+<div class="field"><label class="label" for="amount">Price (₹) *</label><input id="amount" type="number" min="1" step="0.01" placeholder="e.g. 1499"></div>
+<div class="field"><label class="label" for="upiId">UPI ID *</label><input id="upiId" type="text" placeholder="e.g. yourname@upi"></div>
+</div>
+<div class="field"><label class="label" for="address">Delivery Address *</label><textarea id="address" placeholder="Enter the customer's delivery address"></textarea></div>
+<div class="grid">
+<div class="field"><label class="label" for="customer">Customer Name</label><input id="customer" type="text" placeholder="Optional"></div>
+<div class="field"><label class="label" for="order">Order / Item</label><input id="order" type="text" placeholder="e.g. Saree / Jewellery"></div>
+</div>
+<button class="primary" id="createBtn">Create Payment URL</button>
+<div id="result" class="hidden"></div>
+<p class="notice">The generated link stores the order details inside the URL. It is convenient for sharing, but the data is not encrypted; use a backend for sensitive information.</p>
+</section>
+<section id="paymentView" class="card view hidden">
+<div class="hero">
+<div class="panel"><div class="mini">Payment details</div><h2 id="displayOrder">Order</h2><div class="amount" id="displayAmount">₹0.00</div><p><strong>Customer:</strong> <span id="displayCustomer">—</span></p><p><strong>Delivery address:</strong></p><p id="displayAddress" style="white-space:pre-wrap"></p><div class="pay-box"><a id="payBtn" class="btn pay-btn" href="#">Pay via UPI</a><div class="pay-note">On a supported phone, this opens a UPI payment app with the amount and UPI ID pre-filled.</div></div></div>
+<div class="panel"><h2>Thank you</h2><p><strong>Pay to:</strong></p><p id="displayUpi"></p><div class="success">After payment, please send the receipt to Sri Sai Collections.</div><button id="newLinkBtn" class="secondary" style="margin-top:18px">Create another link</button></div>
+</div>
+</section>
+<footer>© Sri Sai Collections</footer>
+</main>
+<script>
+const BUSINESS_NAME="Sri Sai Collections", $=id=>document.getElementById(id);
+function b64url(s){const bytes=new TextEncoder().encode(s);let bin="";bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"")}
+function fromB64url(s){const p=s.replace(/-/g,"+").replace(/_/g,"/")+"===".slice((s.length+3)%4);const bin=atob(p);return new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)))}
+function money(v){return new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(v)}
+function upiUrl(p){const q=new URLSearchParams({pa:p.upiId,pn:BUSINESS_NAME,am:Number(p.amount).toFixed(2),cu:"INR",tn:p.order||"Sri Sai Collections Order"});return "upi://pay?"+q}
+function createLink(){const p={business:BUSINESS_NAME,amount:Number($("amount").value),upiId:$("upiId").value.trim(),address:$("address").value.trim(),customer:$("customer").value.trim(),order:$("order").value.trim()};if(!p.amount||p.amount<=0)return alert("Please enter a valid price.");if(!p.upiId)return alert("Please enter the receiving UPI ID.");if(!p.address)return alert("Please enter the delivery address.");const url=location.origin+location.pathname+"#payment="+b64url(JSON.stringify(p));$("result").classList.remove("hidden");$("result").innerHTML='<div class="success"><strong>Payment URL created.</strong></div><div class="link-box"><input id="generatedUrl" type="text" value="'+url+'" readonly><button class="gold" id="copyBtn">Copy</button></div>';$('copyBtn').onclick=async()=>{await navigator.clipboard.writeText(url);$('copyBtn').textContent='Copied ✓';setTimeout(()=>$('copyBtn').textContent='Copy',1400)}}
+function showPayment(p){$("creatorView").classList.add("hidden");$("paymentView").classList.remove("hidden");$("displayOrder").textContent=p.order||"Sri Sai Collections Order";$("displayAmount").textContent=money(p.amount);$("displayCustomer").textContent=p.customer||"Customer";$("displayAddress").textContent=p.address;$("displayUpi").textContent=p.upiId;$("payBtn").href=upiUrl(p);$("payBtn").textContent="Pay "+money(p.amount)+" via UPI"}
+function load(){const m=location.hash.match(/^#payment=(.+)$/);if(!m)return;try{const p=JSON.parse(fromB64url(m[1]));if(!p?.amount||!p?.upiId||!p?.address)throw 0;showPayment(p)}catch(e){alert("This payment link is invalid or incomplete.")}}
+$("createBtn").onclick=createLink;$("newLinkBtn").onclick=()=>{location.hash="";$("paymentView").classList.add("hidden");$("creatorView").classList.remove("hidden")};load();
+</script>
+</body>
+</html>
