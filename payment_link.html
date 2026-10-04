@@ -817,7 +817,7 @@
             const formattedPrice = formatCurrency(generatedData.price);
             let text = `Hello! Please click the link below to complete your payment of ${formattedPrice} via UPI:\n\n${generatedUrl}\n\nThank you!`;
             if (generatedData.item) {
-                text = `Hello! Payment request for "${generatedData.item}" (${formattedPrice}):\n\n${generatedUrl}\n\nThank you!`;
+                text = `Hello! Payment for "${generatedData.item}" (${formattedPrice}):\n\n${generatedUrl}\n\nThank you!`;
             }
             const whatsappUrl = `https://api.whatsapp.com/send/?text=${encodeURIComponent(text)}`;
             window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
