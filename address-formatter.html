@@ -465,15 +465,15 @@
             }
 
             // Query parameter pre-fill
-            const urlParams = new URLSearchParams(window.location.search);
-            const queryPhone = urlParams.get('phone');
-            if (queryPhone && !document.getElementById('phone').value) {
-                document.getElementById('phone').value = queryPhone.replace(/\D/g, '');
-            }
-            const queryName = urlParams.get('name');
-            if (queryName && !document.getElementById('fullName').value) {
-                document.getElementById('fullName').value = queryName.trim();
-            }
+            // const urlParams = new URLSearchParams(window.location.search);
+            // const queryPhone = urlParams.get('phone');
+            // if (queryPhone && !document.getElementById('phone').value) {
+            //     document.getElementById('phone').value = queryPhone.replace(/\D/g, '');
+            // }
+            // const queryName = urlParams.get('name');
+            // if (queryName && !document.getElementById('fullName').value) {
+            //     document.getElementById('fullName').value = queryName.trim();
+            // }
         }
 
         function saveAddressToCache() {
